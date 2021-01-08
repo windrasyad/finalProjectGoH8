@@ -5,8 +5,9 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/blue-jay/blueprint/lib/boot"
-	"github.com/blue-jay/blueprint/lib/env"
+	"blueprint/blueprint/lib/boot"
+
+	"blueprint/blueprint/lib/env"
 
 	"github.com/blue-jay/core/router"
 	"github.com/blue-jay/core/server"

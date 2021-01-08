@@ -1,19 +1,17 @@
-// Package notepad provides a simple CRUD application in a web page.
-package notepad
+package article
 
 import (
 	"net/http"
-
 	"blueprint/blueprint/lib/flight"
 	"blueprint/blueprint/middleware/acl"
-	"blueprint/blueprint/model/note"
+	"blueprint/blueprint/model/article"
 
 	"github.com/blue-jay/core/pagination"
 	"github.com/blue-jay/core/router"
 )
 
 var (
-	uri = "/notepad"
+	uri = "/article"
 )
 
 // Load the routes.
@@ -28,20 +26,20 @@ func Load() {
 	router.Delete(uri+"/:id", Destroy, c...)
 }
 
-// Index displays the items.
+// Index displays the articles.
 func Index(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
 	// Create a pagination instance with a max of 10 results.
 	p := pagination.New(r, 10)
 
-	items, _, err := note.ByUserIDPaginate(c.DB, c.UserID, p.PerPage, p.Offset)
+	articles, _, err := article.ByUserIDPaginate(c.DB, c.UserID, p.PerPage, p.Offset)
 	if err != nil {
 		c.FlashErrorGeneric(err)
-		items = []note.Item{}
+		articles = []article.Article{}
 	}
 
-	count, err := note.ByUserIDCount(c.DB, c.UserID)
+	count, err := article.ByUserIDCount(c.DB, c.UserID)
 	if err != nil {
 		c.FlashErrorGeneric(err)
 	}
@@ -49,8 +47,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	// Calculate the number of pages.
 	p.CalculatePages(count)
 
-	v := c.View.New("note/index")
-	v.Vars["items"] = items
+	v := c.View.New("article/index")
+	v.Vars["articles"] = articles
 	v.Vars["pagination"] = p
 	v.Render(w, r)
 }
@@ -59,8 +57,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func Create(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	v := c.View.New("note/create")
-	c.Repopulate(v.Vars, "name")
+	v := c.View.New("article/create")
+	c.Repopulate(v.Vars, "tittle")
 	v.Render(w, r)
 }
 
@@ -68,35 +66,35 @@ func Create(w http.ResponseWriter, r *http.Request) {
 func Store(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	if !c.FormValid("name") {
+	if !c.FormValid("tittle","issian") {
 		Create(w, r)
 		return
 	}
 
-	_, err := note.Create(c.DB, r.FormValue("name"), c.UserID)
+	_, err := article.Create(c.DB, r.FormValue("tittle"), r.FormValue("issian"), c.UserID)
 	if err != nil {
 		c.FlashErrorGeneric(err)
 		Create(w, r)
 		return
 	}
 
-	c.FlashSuccess("Item added.")
+	c.FlashSuccess("Article added.")
 	c.Redirect(uri)
 }
 
-// Show displays a single item.
+// Show displays a single Article.
 func Show(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	item, _, err := note.ByID(c.DB, c.Param("id"), c.UserID)
+	article, _, err := article.ByID(c.DB, c.Param("id"), c.UserID)
 	if err != nil {
 		c.FlashErrorGeneric(err)
 		c.Redirect(uri)
 		return
 	}
 
-	v := c.View.New("note/show")
-	v.Vars["item"] = item
+	v := c.View.New("article/show")
+	v.Vars["article"] = article
 	v.Render(w, r)
 }
 
@@ -104,16 +102,16 @@ func Show(w http.ResponseWriter, r *http.Request) {
 func Edit(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	item, _, err := note.ByID(c.DB, c.Param("id"), c.UserID)
+	article, _, err := article.ByID(c.DB, c.Param("id"), c.UserID)
 	if err != nil {
 		c.FlashErrorGeneric(err)
 		c.Redirect(uri)
 		return
 	}
 
-	v := c.View.New("note/edit")
-	c.Repopulate(v.Vars, "name")
-	v.Vars["item"] = item
+	v := c.View.New("article/edit")
+	c.Repopulate(v.Vars, "tittle")
+	v.Vars["article"] = article
 	v.Render(w, r)
 }
 
@@ -121,19 +119,19 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 func Update(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	if !c.FormValid("name") {
+	if !c.FormValid("tittle", "issian") {
 		Edit(w, r)
 		return
 	}
 
-	_, err := note.Update(c.DB, r.FormValue("name"), c.Param("id"), c.UserID)
+	_, err := article.Update(c.DB, r.FormValue("tittle"), r.FormValue("issian"), c.Param("id"), c.UserID)
 	if err != nil {
 		c.FlashErrorGeneric(err)
 		Edit(w, r)
 		return
 	}
 
-	c.FlashSuccess("Item updated.")
+	c.FlashSuccess("Article updated.")
 	c.Redirect(uri)
 }
 
@@ -141,11 +139,11 @@ func Update(w http.ResponseWriter, r *http.Request) {
 func Destroy(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	_, err := note.DeleteSoft(c.DB, c.Param("id"), c.UserID)
+	_, err := article.DeleteSoft(c.DB, c.Param("id"), c.UserID)
 	if err != nil {
 		c.FlashErrorGeneric(err)
 	} else {
-		c.FlashNotice("Item deleted.")
+		c.FlashNotice("Article deleted.")
 	}
 
 	c.Redirect(uri)

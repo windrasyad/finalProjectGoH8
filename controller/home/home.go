@@ -4,24 +4,61 @@ package home
 import (
 	"net/http"
 
-	"github.com/blue-jay/blueprint/lib/flight"
+	"blueprint/blueprint/lib/flight"
+	"blueprint/blueprint/model/home"
 
+	"github.com/blue-jay/core/pagination"
 	"github.com/blue-jay/core/router"
+)
+
+var (
+	uri = "/"
 )
 
 // Load the routes.
 func Load() {
-	router.Get("/", Index)
+	// c := router.Chain(acl.DisallowAnon)
+	router.Get(uri, Index)
+	router.Get(uri+"view/:id", Show)
 }
 
-// Index displays the home page.
 func Index(w http.ResponseWriter, r *http.Request) {
 	c := flight.Context(w, r)
 
-	v := c.View.New("home/index")
-	if c.Sess.Values["id"] != nil {
-		v.Vars["first_name"] = c.Sess.Values["first_name"]
+	// Create a pagination instance with a max of 10 results.
+	p := pagination.New(r, 10)
+
+	articles, _, err := home.ByUserIDPaginate(c.DB, c.UserID, p.PerPage, p.Offset)
+	if err != nil {
+		c.FlashErrorGeneric(err)
+		articles = []home.Article{}
 	}
 
+	count, err := home.ByUserIDCount(c.DB, c.UserID)
+	if err != nil {
+		c.FlashErrorGeneric(err)
+	}
+
+	// Calculate the number of pages.
+	p.CalculatePages(count)
+
+	v := c.View.New("home/index")
+	v.Vars["articles"] = articles
+	v.Vars["pagination"] = p
+	v.Render(w, r)
+}
+
+func Show(w http.ResponseWriter, r *http.Request) {
+	c := flight.Context(w, r)
+
+	article, _, err := home.ByID(c.DB, c.Param("id"), c.UserID)
+	if err != nil {
+		c.FlashErrorGeneric(err)
+		c.Redirect(uri)
+		return
+	}
+
+	v := c.View.New("home/show")
+	v.Vars["article"] = article
 	v.Render(w, r)
 }

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/blue-jay/blueprint/lib/env"
+	"blueprint/blueprint/lib/env"
 )
 
 // TestPath ensures path is set properly.

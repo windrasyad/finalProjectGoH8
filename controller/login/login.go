@@ -4,9 +4,9 @@ package login
 import (
 	"net/http"
 
-	"github.com/blue-jay/blueprint/lib/flight"
-	"github.com/blue-jay/blueprint/middleware/acl"
-	"github.com/blue-jay/blueprint/model/user"
+	"blueprint/blueprint/lib/flight"
+	"blueprint/blueprint/middleware/acl"
+	"blueprint/blueprint/model/user"
 
 	"github.com/blue-jay/core/flash"
 	"github.com/blue-jay/core/form"
@@ -61,7 +61,7 @@ func Store(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Login successfully
 			session.Empty(c.Sess)
-			c.Sess.AddFlash(flash.Info{"Login successful!", flash.Success})
+			c.Sess.AddFlash(flash.Info{Message: "Login successful!", Class: flash.Success})
 			c.Sess.Values["id"] = result.ID
 			c.Sess.Values["email"] = email
 			c.Sess.Values["first_name"] = result.FirstName

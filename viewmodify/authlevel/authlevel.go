@@ -4,7 +4,8 @@ package authlevel
 import (
 	"net/http"
 
-	"github.com/blue-jay/blueprint/lib/flight"
+	"blueprint/blueprint/lib/flight"
+
 	"github.com/blue-jay/core/view"
 )
 

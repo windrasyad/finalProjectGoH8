@@ -5,8 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/blue-jay/blueprint/model/note"
-	"github.com/blue-jay/blueprint/model/user"
+	"blueprint/blueprint/model/note"
+	"blueprint/blueprint/model/user"
+
 	"github.com/blue-jay/core/storage/migration/mysql"
 
 	"github.com/jmoiron/sqlx"
